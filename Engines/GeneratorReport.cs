@@ -2,6 +2,7 @@
 using Spire.Xls;
 using Spire.Xls.Converter;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -9,10 +10,26 @@ namespace Engines
 {
     public class GeneratorReport
     {
+        public enum MethodReport
+        {
+            Random = 0,
+            Code = 1
+        }
+
         public string FolderPath { get; set; }
         public string FileSource { get; set; }
         public string FileTemplate { get; set; }
 
+        public string CodeStore { get; set; }
+        public int RandomNumber { get; set; }
+        public int Year { get; set; }
+        public int Month { get; set; }
+        public MethodReport Method { get; set; }
+
+        public bool WorkFinished { get; set; }
+        public int ProgressFinished { get; set; }
+        public string NameActual { get; set; }
+        public int TotalWork { get; set; }
 
         public GeneratorReport()
         {
@@ -21,230 +38,473 @@ namespace Engines
             FileTemplate = "Template.xlsx";
         }
 
-        public void GeneratePDF(string codeStore, int month, int year)
+        public void Generate()
         {
+            string ruc = string.Empty;
+            string name = string.Empty;
+            int beforeMonth = Month;
+            int currentYear = Year;
+            int valueInt = 0;
+            decimal valueDecimal = 0;
+
+            int counterWorked = 0;
+
             SpreadsheetGear.IRange range = null;
             SpreadsheetGear.IWorksheet wsSource = null;
             SpreadsheetGear.IWorksheet wsTarget = null;
-            SpreadsheetGear.Charts.IChart curentChart = null;
             Debug.WriteLine(System.AppDomain.CurrentDomain.BaseDirectory);
-            SpreadsheetGear.IWorkbook wbSource = SpreadsheetGear.Factory.GetWorkbook($@"{System.AppDomain.CurrentDomain.BaseDirectory}\Resources\{FileSource}");
-            SpreadsheetGear.IWorkbook wbTarget = SpreadsheetGear.Factory.GetWorkbook($@"{System.AppDomain.CurrentDomain.BaseDirectory}\Resources\{FileTemplate}");
-            wbSource.WorkbookSet.Calculation = SpreadsheetGear.Calculation.Manual;
-            wsSource = wbSource.Worksheets[0];
 
-            SpreadsheetGear.Drawing.Color basicColor = SpreadsheetGear.Drawing.Color.FromArgb(89, 89, 89);
-            SpreadsheetGear.Drawing.Color blueColor = SpreadsheetGear.Drawing.Color.FromArgb(0, 112, 192);
-            SpreadsheetGear.Drawing.Color orangeColor = SpreadsheetGear.Drawing.Color.FromArgb(255, 153, 51);
+            //Retrieving Template and Source
+            SpreadsheetGear.IWorkbook wbSource = SpreadsheetGear.Factory.GetWorkbook($@"{FileSource}");
 
-            //Update Data from Excel
-            range = wsSource.Cells["C3"];
-            range.Value = codeStore;
-            wbSource.WorkbookSet.Calculate();
-            wbSource.Save();
-            wsTarget = wbTarget.Worksheets[0];
+            List<string> codesSelected = new List<string>();
+            wsSource = wbSource.Worksheets[1];
 
-            // C12, C13, C14
-            int beforeMonth = month;
-            int currentYear = year;
-            int valueInt = 0;
-            decimal valueDecimal = 0;
-            for (int i = 14; i > 1; i--, beforeMonth--) // begin at Pos 14
+            if (Method == MethodReport.Random)
             {
-                if (beforeMonth == 0)
+                while (codesSelected.Count < RandomNumber)
                 {
-                    currentYear -= 1;
-                    beforeMonth = 12;
+                    int randonRowIndex = new Random().Next(1, 1000);
+
+                    if (!codesSelected.Contains(wsSource.Cells[randonRowIndex, 0].Value.ToString()))
+                        codesSelected.Add(wsSource.Cells[randonRowIndex, 0].Value.ToString());
                 }
-                range = wsSource.Cells[12, i]; // Row 12
-                range.Value = $"{beforeMonth}/{currentYear}";
-
             }
+            else codesSelected.Add(CodeStore);
 
-            var txtFrame = wsTarget.Shapes["INF_MONTH"].TextFrame;
-            txtFrame.Characters.Text = FormatMonthYear(month, year);
-
-            wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["NAME_STORE"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["ADDRESS_STORE"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["CODE_STORE"].TextFrame.AutoSize = false;
+            wsSource = wbSource.Worksheets[0];
+            wsSource.Cells["G3"].Formula = wsSource.Cells["D3"].Formula.Replace("4", "3");
 
 
-            wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Text = wsSource.Cells["D3"].Value.ToString();
-            wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Text = wsSource.Cells["E3"].Value.ToString() + ", " + wsSource.Cells["F3"].Value.ToString();
-            wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Text = $"Comercio: {codeStore}";
+            this.TotalWork = codesSelected.Count;
+            this.ProgressFinished = counterWorked; 
 
-            wsTarget.Shapes["VEN_TITLE"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["NVENT_TITLE"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["CCOM_TITLE"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["CVISIT_TITLE"].TextFrame.Characters.Font.Color = basicColor;
+            foreach (string code in codesSelected)
+            { 
+                SpreadsheetGear.IWorkbook wbTarget = SpreadsheetGear.Factory.GetWorkbook($@"{System.AppDomain.CurrentDomain.BaseDirectory}\Resources\{FileTemplate}");
+                wbSource.WorkbookSet.Calculation = SpreadsheetGear.Calculation.Manual;
+                wsSource = wbSource.Worksheets[0];
 
-            wsTarget.Shapes["MN_MAIN"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["NP_MAIN"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["MAIN_WARNING1"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["MAIN_WARNING2"].TextFrame.Characters.Font.Color = basicColor;
+                SpreadsheetGear.Drawing.Color basicColor = SpreadsheetGear.Drawing.Color.FromArgb(89, 89, 89);
+                SpreadsheetGear.Drawing.Color blueColor = SpreadsheetGear.Drawing.Color.FromArgb(0, 112, 192);
+                SpreadsheetGear.Drawing.Color orangeColor = SpreadsheetGear.Drawing.Color.FromArgb(255, 153, 51);
 
-            wsTarget.Shapes["MN_MAIN"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["MN_MAIN"].TextFrame.HorizontalAlignment = SpreadsheetGear.HAlign.Left;
-            wsTarget.Shapes["MN_MAIN"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["NP_MAIN"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["NP_MAIN"].TextFrame.HorizontalAlignment = SpreadsheetGear.HAlign.Left;
-            wsTarget.Shapes["MN_MAIN"].TextFrame.Characters.Font.Color = basicColor;
+                //Update Data from Excel 
+                range = wsSource.Cells["C3"];
+                range.Value = code;
+                wbSource.WorkbookSet.Calculate();
+                wbSource.Save();
+                ruc = wsSource.Cells["G3"].Value?.ToString();
+                name = wsSource.Cells["D3"].Value?.ToString().Replace(".", string.Empty).Replace(' ', '_');
+                NameActual = name;
 
-            // Main
-            int index = 2;
-            SpreadsheetGear.Shapes.ITextFrame txtFrameMN = null;
-            SpreadsheetGear.Shapes.ITextFrame txtFrameNP = null;
-            for (var i = 3; i < 7; i++, index++)
-            {
-                txtFrameMN = wsTarget.Shapes[$"MN_{index}"].TextFrame;
-                txtFrameNP = wsTarget.Shapes[$"NP_{index}"].TextFrame;
+                wsTarget = wbTarget.Worksheets[0];
 
-                if (index == 2 || index == 4 || index == 6)
+                // C12, C13, C14
+                beforeMonth = Month;
+                currentYear = Year;
+                valueInt = 0;
+                valueDecimal = 0;
+
+                for (int i = 14; i > 1; i--, beforeMonth--) // begin at Pos 14
                 {
-                    valueDecimal = 0;
-                    Decimal.TryParse(wsSource.Cells[5, i].Value.ToString(), out valueDecimal);
-                    txtFrameMN.Characters.Text = "S/ " + (valueDecimal).ToString("F");
+                    if (beforeMonth == 0)
+                    {
+                        currentYear -= 1;
+                        beforeMonth = 12;
+                    }
+                    range = wsSource.Cells[12, i]; // Row 12
+                    range.Value = $"{beforeMonth}/{currentYear}"; 
+                }
 
-                    Decimal.TryParse(wsSource.Cells[8, i].Value.ToString(), out valueDecimal);
-                    txtFrameNP.Characters.Text = "S/ " + (valueDecimal).ToString("F");
+                #region Setting Info
+                var txtFrame = wsTarget.Shapes["INF_MONTH"].TextFrame;
+                txtFrame.Characters.Text = FormatMonthYear(Month, Year);
+
+                wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["NAME_STORE"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["ADDRESS_STORE"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["CODE_STORE"].TextFrame.AutoSize = false;
+
+
+                wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Text = wsSource.Cells["D3"].Value.ToString();
+                wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Text = wsSource.Cells["E3"].Value.ToString() + ", " + wsSource.Cells["F3"].Value.ToString();
+                wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Text = $"Comercio: {code}";
+
+                wsTarget.Shapes["VEN_TITLE"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["NVENT_TITLE"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["CCOM_TITLE"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["CVISIT_TITLE"].TextFrame.Characters.Font.Color = basicColor;
+
+                wsTarget.Shapes["MN_MAIN"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["NP_MAIN"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["MAIN_WARNING1"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["MAIN_WARNING2"].TextFrame.Characters.Font.Color = basicColor;
+
+                wsTarget.Shapes["MN_MAIN"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["MN_MAIN"].TextFrame.HorizontalAlignment = SpreadsheetGear.HAlign.Left;
+                wsTarget.Shapes["MN_MAIN"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["NP_MAIN"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["NP_MAIN"].TextFrame.HorizontalAlignment = SpreadsheetGear.HAlign.Left;
+                wsTarget.Shapes["MN_MAIN"].TextFrame.Characters.Font.Color = basicColor;
+                #endregion
+
+                #region MainData
+                // Main
+                int index = 2;
+                SpreadsheetGear.Shapes.ITextFrame txtFrameMN = null;
+                SpreadsheetGear.Shapes.ITextFrame txtFrameNP = null;
+                for (var i = 3; i < 7; i++, index++)
+                {
+                    txtFrameMN = wsTarget.Shapes[$"MN_{index}"].TextFrame;
+                    txtFrameNP = wsTarget.Shapes[$"NP_{index}"].TextFrame;
+
+                    if (index == 2 || index == 4 || index == 6)
+                    {
+                        valueDecimal = 0;
+                        Decimal.TryParse(wsSource.Cells[5, i].Value.ToString(), out valueDecimal);
+                        txtFrameMN.Characters.Text = "S/ " + (valueDecimal).ToString("F");
+
+                        Decimal.TryParse(wsSource.Cells[8, i].Value.ToString(), out valueDecimal);
+                        txtFrameNP.Characters.Text = "S/ " + (valueDecimal).ToString("F");
+                    }
+                    else
+                    {
+                        valueInt = 0;
+                        int.TryParse(wsSource.Cells[5, i].Value.ToString(), out valueInt);
+                        txtFrameMN.Characters.Text = (valueInt).ToString();
+
+                        int.TryParse(wsSource.Cells[8, i].Value.ToString(), out valueInt);
+                        txtFrameNP.Characters.Text = (valueInt).ToString();
+                    }
+
+                    txtFrameMN.Characters.Font.Color = basicColor;
+                    txtFrameNP.Characters.Font.Color = basicColor;
+                }
+
+                wsTarget = wbTarget.Worksheets[2];
+                wbSource.WorkbookSet.Calculate();
+                wbSource.Save();
+
+                #endregion
+
+                #region Graphic 2  
+                wsTarget = wbTarget.Worksheets[0];
+                wsTarget.Shapes["G2_FINAL"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["G2_FINAL"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["G2_ADVICE"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["GRAPHIC1_LBL1"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["GRAPHIC1_LBL1"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["GRAPHIC1_LBL2"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["GRAPHIC1_LBL2"].TextFrame.Characters.Font.Color = basicColor;
+
+                wsTarget = wbTarget.Worksheets[2];
+                decimal lastYearmonth = 0;
+                decimal actualMonth = 0;
+                decimal sum3PreviousMonths = 0;
+                for (var i = 2; i < 15; i++)
+                {
+                    wsTarget.Cells[4, i].Value = wsSource.Cells[12, i].Value; // headerDates
+
+                    valueDecimal = 0;
+                    range = wsSource.Cells[13, i];
+                    decimal.TryParse(range.Value.ToString(), out valueDecimal);
+
+                    wsTarget.Cells[5, i].Value = valueDecimal;
+                    if (i == 2)
+                        lastYearmonth = valueDecimal;
+                    else if (i == 14)
+                        actualMonth = valueDecimal;
+                    else if (i >= 11 && i < 14)
+                        sum3PreviousMonths += valueDecimal; // sum of 3 previous months 
+
+                    valueDecimal = 0;
+                    range = wsSource.Cells[14, i];
+                    decimal.TryParse(range.Value.ToString(), out valueDecimal);
+                    wsTarget.Cells[6, i].Value = valueDecimal;
+                }
+
+                wsTarget = wbTarget.Worksheets[0];
+
+                var advices2 = EvalueAdviceG2(wsTarget.Shapes["INF_MONTH"].TextFrame.Characters.Text
+                    , sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Text);
+                wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Text = advices2.Item1;
+                wsTarget.Shapes["G2_FINAL"].TextFrame.Characters.Text = advices2.Item2;
+
+                #endregion
+
+                #region Graphic 3
+
+                wsTarget.Shapes["G3_FINAL"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["G3_FINAL"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["G3_ADVICE"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["G3_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["GRAPHIC2_LBL1"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["GRAPHIC2_LBL1"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["GRAPHIC2_LBL2"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["GRAPHIC2_LBL2"].TextFrame.Characters.Font.Color = basicColor;
+
+                wsTarget = wbTarget.Worksheets[2];
+
+                lastYearmonth = 0;
+                actualMonth = 0;
+                sum3PreviousMonths = 0;
+                for (var i = 2; i < 15; i++)
+                {
+                    wsTarget.Cells[9, i].Value = wsSource.Cells[12, i].Value; // headerDates
+
+                    valueDecimal = 0;
+                    range = wsSource.Cells[15, i];
+                    decimal.TryParse(range.Value.ToString(), out valueDecimal);
+
+                    wsTarget.Cells[10, i].Value = valueDecimal;
+                    if (i == 2)
+                        lastYearmonth = valueDecimal;
+                    else if (i == 14)
+                        actualMonth = valueDecimal;
+                    else if (i >= 11 && i < 14)
+                        sum3PreviousMonths += valueDecimal; // sum of 3 previous months 
+
+                    valueDecimal = 0;
+                    range = wsSource.Cells[16, i];
+                    decimal.TryParse(range.Value.ToString(), out valueDecimal);
+                    wsTarget.Cells[11, i].Value = valueDecimal;
+                }
+
+                wsTarget = wbTarget.Worksheets[0];
+
+                var advices3 = EvalueAdviceG3(wsTarget.Shapes["INF_MONTH"].TextFrame.Characters.Text
+                    , sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Shapes["G3_ADVICE"].TextFrame.Characters.Text);
+                wsTarget.Shapes["G3_ADVICE"].TextFrame.Characters.Text = advices3.Item1;
+                wsTarget.Shapes["G3_FINAL"].TextFrame.Characters.Text = advices3.Item2;
+                #endregion
+
+                #region Graphic 4
+
+                wsTarget.Shapes["G4_ADVICE"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["G4_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
+
+                index = 1;
+                for (var i = 20; i < 25; i++, index++)
+                {
+                    range = wsSource.Cells[i, 2];
+                    int.TryParse(range.Value.ToString(), out valueInt);
+                    wsTarget.Shapes[$"G4_{index}_COUNT"].TextFrame.AutoSize = false;
+                    wsTarget.Shapes[$"G4_{index}_COUNT"].TextFrame.Characters.Font.Color = basicColor;
+                    wsTarget.Shapes[$"G4_{index}_COUNT"].TextFrame.Characters.Text = valueInt.ToString();
+
+                    range = wsSource.Cells[i, 3];
+                    decimal.TryParse(range.Value.ToString(), out valueDecimal);
+                    wsTarget.Shapes[$"G4_{index}_PERC"].TextFrame.AutoSize = false;
+                    wsTarget.Shapes[$"G4_{index}_PERC"].TextFrame.Characters.Font.Color = blueColor;
+                    wsTarget.Shapes[$"G4_{index}_PERC"].TextFrame.Characters.Text = $"({(int)(valueDecimal * 100)}%)";
+
+                    wsTarget.Shapes[$"G4_CVISIT_{index}"].TextFrame.AutoSize = false;
+                    wsTarget.Shapes[$"G4_CVISIT_{index}"].TextFrame.Characters.Font.Color = blueColor;
+
+                    wsTarget.Shapes[$"G4_TIME_{index}"].TextFrame.AutoSize = false;
+                    wsTarget.Shapes[$"G4_TIME_{index}"].TextFrame.Characters.Font.Color = orangeColor;
+                }
+
+                wsTarget = wbTarget.Worksheets[0];
+
+                #endregion
+
+                #region Graphic 5 
+                wsTarget.Shapes["G5_ADVICE"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["G5_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
+
+                wsTarget = wbTarget.Worksheets[2];
+
+                List<(int, int)> mayor_days = new List<(int, int)>();
+                index = 1;
+                int lessValueIndex = 0;
+                for (var i = 2; i < 9; i++, index++)
+                {
+                    lessValueIndex = -1;
+                    valueInt = 0;
+                    int.TryParse(wsSource.Cells[15, i].Value.ToString(), out valueInt);
+                    wsTarget.Cells[15, i].Value = valueInt;
+
+                    if (valueInt > 0)
+                    {
+                        if (mayor_days.Count == 0)
+                            mayor_days.Add((index, valueInt));
+                        else
+                        {
+                            if (mayor_days.Count < 3)
+                                mayor_days.Add(ValueTuple.Create(index, valueInt));
+                            else
+                            {
+                                for (var pos = 0; pos < mayor_days.Count; pos++)
+                                    if (valueInt > mayor_days[pos].Item2)
+                                        lessValueIndex = pos;
+
+                                if (lessValueIndex != -1)
+                                    mayor_days[lessValueIndex] = (index, valueInt);
+                            }
+
+                        }
+                    }
+                }
+
+                wsTarget = wbTarget.Worksheets[0];
+
+                var advices5 = EvalueAdviceG5(mayor_days, wsTarget.Shapes["G5_ADVICE"].TextFrame.Characters.Text);
+                wsTarget.Shapes["G5_ADVICE"].TextFrame.Characters.Text = advices5.Item1;
+
+                #endregion
+
+                string nameTarget = $"{name}_{ruc}.xlsx";
+                wbTarget.SaveAs($@"{FolderPath}\{nameTarget}", SpreadsheetGear.FileFormat.OpenXMLWorkbook);
+
+                counterWorked++;
+                this.ProgressFinished = counterWorked;
+            }
+        }
+
+        private void GeneratePDF(string rutaExcel)
+        {
+            string rutapdf = Path.ChangeExtension(rutaExcel, ".pdf");
+        }
+
+        private (string, string) EvalueAdviceG2(string currentTitleMonth, decimal sum3PreviousMonths, decimal currentMonth, decimal lastYearMonth, string baseFormat)
+        {
+            string[] parts = baseFormat.Split('/');
+            string verb = string.Empty;
+            string percent = string.Empty;
+            string finalAdvice = string.Empty;
+            if (lastYearMonth + sum3PreviousMonths + currentMonth > 0)
+            {
+                parts[0] = parts[0].Replace("{MONTH}", currentTitleMonth);
+                if (sum3PreviousMonths / 3 < currentMonth)
+                {
+                    verb = "han incrementado";
+                    percent = $"en {(int)(Math.Abs(((sum3PreviousMonths / 3) / currentMonth) * 100 - 100))}%";
+                    finalAdvice = "¡Sigue así!";
+                }
+                else if (sum3PreviousMonths / 3 > currentMonth)
+                {
+                    verb = "han reducido";
+                    percent = $"en {(int)(Math.Abs((currentMonth > 0 ? (sum3PreviousMonths / 3) / currentMonth : 0) * 100 - 100))}%";
+                    finalAdvice = "Puedes realizar actividades de marketing para reactivar tus ventas.";
                 }
                 else
                 {
-                    valueInt = 0;
-                    int.TryParse(wsSource.Cells[5, i].Value.ToString(), out valueInt);
-                    txtFrameMN.Characters.Text = (valueInt).ToString();
-
-                    int.TryParse(wsSource.Cells[8, i].Value.ToString(), out valueInt);
-                    txtFrameNP.Characters.Text = (valueInt).ToString();
+                    verb = "mantienen";
+                    finalAdvice = "Vas bien, pero puedes mejorar.";
                 }
 
-                txtFrameMN.Characters.Font.Color = basicColor;
-                txtFrameNP.Characters.Font.Color = basicColor;
+                parts[0] = parts[0].Replace("{VERB_1}", verb).Replace("{PER_1}", percent);
+
+                if (lastYearMonth < currentMonth)
+                {
+                    verb = "hubo un incremento";
+                    percent = $"del {(int)(Math.Abs((lastYearMonth / currentMonth) * 100 - 100))}%";
+                }
+                else if (lastYearMonth > currentMonth)
+                {
+                    verb = "hubo una reducción";
+                    percent = $"del {(int)(Math.Abs((currentMonth > 0 ? lastYearMonth / currentMonth : 0) * 100 - 100))}%";
+                }
+                else verb = "hay un equilibrio";
+
+                parts[1] = parts[1].Replace("{VERB_2}", verb).Replace("{PER_2}", percent);
+                baseFormat = parts[0] + parts[1];
             }
+            else baseFormat = "¡No has tenido actividad en mucho tiempo!";
+            return (baseFormat, finalAdvice);
+        }
 
-            wsTarget = wbTarget.Worksheets[2];
-            wbSource.WorkbookSet.Calculate();
-            wbSource.Save();
-
-            wsTarget = wbTarget.Worksheets[0];
-            // Graphic 2
-            wsTarget.Shapes["G2_ADVICE"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["GRAPHIC1_LBL1"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["GRAPHIC1_LBL1"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["GRAPHIC1_LBL2"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["GRAPHIC1_LBL2"].TextFrame.Characters.Font.Color = basicColor;
-
-            wsTarget = wbTarget.Worksheets[2];
-            decimal lastYearmonth = 0;
-            decimal actualMonth = 0;
-            decimal sum3PreviousMonths = 0;
-            for (var i = 2; i < 15; i++)
+        private (string, string) EvalueAdviceG3(string currentTitleMonth, decimal sum3PreviousMonths, decimal currentMonth, decimal lastYearMonth, string baseFormat)
+        {
+            string[] parts = baseFormat.Split('/');
+            string verb = string.Empty;
+            string percent = string.Empty;
+            string finalAdvice = string.Empty;
+            if (lastYearMonth + sum3PreviousMonths + currentMonth > 0)
             {
-                wsTarget.Cells[4, i].Value = wsSource.Cells[12, i].Value; // headerDates
+                if (sum3PreviousMonths / 3 < currentMonth)
+                {
+                    verb = "han incrementado";
+                    percent = $"en {(int)(Math.Abs(((sum3PreviousMonths / 3) / currentMonth) * 100 - 100))}%";
+                    finalAdvice = "¡Sigue así!";
+                }
+                else if (sum3PreviousMonths / 3 > currentMonth)
+                {
+                    verb = "han reducido";
+                    percent = $"en {(int)(Math.Abs((currentMonth > 0 ? (sum3PreviousMonths / 3) / currentMonth : 0) * 100 - 100))}%";
+                    finalAdvice = "Puedes realizar actividades de marketing para reactivar tus ventas.";
+                }
+                else
+                {
+                    verb = "mantienen";
+                    finalAdvice = "Vas bien, pero puedes mejorar.";
+                }
 
-                valueDecimal = 0;
-                range = wsSource.Cells[13, i];
-                decimal.TryParse(range.Value.ToString(), out valueDecimal);
+                parts[0] = parts[0].Replace("{VERB_1}", verb).Replace("{PER_1}", percent);
 
-                wsTarget.Cells[5, i].Value = valueDecimal;
-                if (i == 2)
-                    lastYearmonth = valueDecimal;
-                else if (i == 14)
-                    actualMonth = valueDecimal;
-                else if (i >= 11 && i < 14)
-                    sum3PreviousMonths += valueDecimal; // sum of 3 previous months 
+                if (lastYearMonth < currentMonth)
+                {
+                    verb = "un incremento";
+                    percent = $"del {(int)(Math.Abs((lastYearMonth / currentMonth) * 100 - 100))}%";
+                }
+                else if (lastYearMonth > currentMonth)
+                {
+                    verb = "una reducción";
+                    percent = $"del {(int)(Math.Abs((currentMonth > 0 ? lastYearMonth / currentMonth : 0) * 100 - 100))}%";
+                }
+                else verb = "un equilibrio";
 
-                valueDecimal = 0;
-                range = wsSource.Cells[14, i];
-                decimal.TryParse(range.Value.ToString(), out valueDecimal);
-                wsTarget.Cells[6, i].Value = valueDecimal;
+                parts[1] = parts[1].Replace("{VERB_2}", verb).Replace("{PER_2}", percent);
+                baseFormat = parts[0] + parts[1];
             }
-            var advices2 = EvalueAdviceG2(sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Text);
-            wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Text = advices2.Item1;
+            else baseFormat = "¡No has tenido actividad en mucho tiempo!";
 
-            wsTarget = wbTarget.Worksheets[0];
-            // Graphic 3
-            wsTarget.Shapes["G3_ADVICE"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["G3_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["GRAPHIC2_LBL1"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["GRAPHIC2_LBL1"].TextFrame.Characters.Font.Color = basicColor;
-            wsTarget.Shapes["GRAPHIC2_LBL2"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["GRAPHIC2_LBL2"].TextFrame.Characters.Font.Color = basicColor;
+            return (baseFormat, finalAdvice);
+        }
 
-            wsTarget = wbTarget.Worksheets[2];
-            for (var i = 2; i < 15; i++)
-            { 
-                wsTarget.Cells[9, i].Value = wsSource.Cells[12, i].Value; // headerDates
-                 
-                valueDecimal = 0;
-                range = wsSource.Cells[15, i];
-                decimal.TryParse(range.Value.ToString(), out valueDecimal);
+        private (string, string) EvalueAdviceG5(List<(int, int)> hitDays, string baseFormat)
+        {
+            string[] parts = baseFormat.Split('/');
+            string days = string.Empty;
 
-                wsTarget.Cells[10, i].Value = valueDecimal;
-                if (i == 2)
-                    lastYearmonth = valueDecimal;
-                else if (i == 14)
-                    actualMonth = valueDecimal;
-                else if (i >= 11 && i < 14)
-                    sum3PreviousMonths += valueDecimal; // sum of 3 previous months 
-
-                valueDecimal = 0;
-                range = wsSource.Cells[16, i];
-                decimal.TryParse(range.Value.ToString(), out valueDecimal);
-                wsTarget.Cells[11, i].Value = valueDecimal; 
-            }
-
-            var advices3 = EvalueAdviceG2(sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Text);
-            wsTarget.Shapes["G3_ADVICE"].TextFrame.Characters.Text = advices3.Item1;
-              
-            wsTarget = wbTarget.Worksheets[0];
-            // Graphic 4
-            wsTarget.Shapes["G4_ADVICE"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["G4_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
-
-            index = 1;
-            for (var i = 20; i < 25; i++, index++)
+            if (hitDays.Count > 0)
             {
-                range = wsSource.Cells[i, 2];
-                int.TryParse(range.Value.ToString(), out valueInt);
-                wsTarget.Shapes[$"G4_{index}_COUNT"].TextFrame.AutoSize = false;
-                wsTarget.Shapes[$"G4_{index}_COUNT"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes[$"G4_{index}_COUNT"].TextFrame.Characters.Text = valueInt.ToString();
+                for (var pos = 0; pos < hitDays.Count; pos++)
+                    days += (hitDays.Count > 1 && pos == hitDays.Count - 1 ? " y " : string.Empty) + (FormatDays(hitDays[pos].Item1) + (pos != hitDays.Count - 1 ? ", " : string.Empty));
 
-                range = wsSource.Cells[i, 3];
-                decimal.TryParse(range.Value.ToString(), out valueDecimal);
-                wsTarget.Shapes[$"G4_{index}_PERC"].TextFrame.AutoSize = false;
-                wsTarget.Shapes[$"G4_{index}_PERC"].TextFrame.Characters.Font.Color = blueColor;
-                wsTarget.Shapes[$"G4_{index}_PERC"].TextFrame.Characters.Text = $"({(int)(valueDecimal * 100)}%)";
-
-                wsTarget.Shapes[$"G4_CVISIT_{index}"].TextFrame.AutoSize = false;
-                wsTarget.Shapes[$"G4_CVISIT_{index}"].TextFrame.Characters.Font.Color = blueColor;
-
-                wsTarget.Shapes[$"G4_TIME_{index}"].TextFrame.AutoSize = false;
-                wsTarget.Shapes[$"G4_TIME_{index}"].TextFrame.Characters.Font.Color = orangeColor;
+                parts[0] = parts[0].Replace("{DAYS}", days);
+                baseFormat = parts[0] + parts[1];
             }
+            else baseFormat = parts[1];
+            return (baseFormat, string.Empty);
+        }
 
-            wsTarget = wbTarget.Worksheets[0];
-            // Graphic 5 
-            wsTarget.Shapes["G5_ADVICE"].TextFrame.AutoSize = false;
-            wsTarget.Shapes["G5_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
-
-            wsTarget = wbTarget.Worksheets[2];
-            for (var i = 2; i < 9; i++)
+        private string FormatDays(int day)
+        {
+            switch (day)
             {
-                valueInt = 0;
-                int.TryParse(wsSource.Cells[15, i].Value.ToString(), out valueInt);
-                wsTarget.Cells[15, i].Value = valueInt;
+                case 1:
+                    return "lunes";
+                case 2:
+                    return "martes";
+                case 3:
+                    return "miércoles";
+                case 4:
+                    return "jueves";
+                case 5:
+                    return "viernes";
+                case 6:
+                    return "sábado";
+                case 7:
+                    return "domingo";
             }
+            return string.Empty;
 
-            string nameTarget = $"{codeStore}_{DateTime.Now.Ticks}.xlsx";
-            wbTarget.SaveAs(nameTarget, SpreadsheetGear.FileFormat.OpenXMLWorkbook);
-
-            this.GeneratePDF($@"{System.AppDomain.CurrentDomain.BaseDirectory}\{nameTarget}");
         }
 
         private string FormatMonthYear(int month, int year)
@@ -278,50 +538,6 @@ namespace Engines
             }
             return string.Empty;
 
-        }
-
-        private void GeneratePDF(string rutaExcel)
-        {
-            string rutapdf = Path.ChangeExtension(rutaExcel, ".pdf");
-            //spire.xls.workbook workbook = new spire.xls.workbook();
-            //workbook.loadfromfile(rutaexcel);
-            //workbook.convertersetting.sheetfittopage = true;
-            //workbook.savetofile(rutapdf, spire.xls.fileformat.pdf);
-
-            //var workbook = new Workbook();
-            //workbook.LoadFromFile(rutaExcel);
-            ////' Set PDF template 
-            //var pdfDocument = new PdfDocument();
-            //pdfDocument.PageSettings.Orientation = PdfPageOrientation.Landscape;
-            //pdfDocument.PageSettings.Width = 970;
-            //pdfDocument.PageSettings.Height = 850; 
-            ////'Convert Excel to PDF using the template above 
-            //var pdfConverter = new PdfConverter(workbook);
-            //var settings = new PdfConverterSettings();
-
-            //workbook.SaveToFile("HOLASD.pdf",Spire.Xls.FileFormat.PDF);
-
-
-
-            //System.Diagnostics.Process.Start("sample.pdf");
-
-
-
-            //GemBox.Spreadsheet.SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
-            //ExcelFile excel = ExcelFile.Load(rutaExcel);
-            //excel.Save(rutapdf);
-        }
-
-        private Tuple<string, string> EvalueAdviceG2(decimal sum3PreviousMonths, decimal currentMonth, decimal lastYearMonth, string baseFormat)
-        {
-
-            return new Tuple<string, string>(baseFormat, string.Empty);
-        }
-
-        private Tuple<string, string> EvalueAdviceG3(decimal sum3PreviousMonths, decimal currentMonth, decimal lastYearMonth, string baseFormat)
-        {
-
-            return new Tuple<string, string>(baseFormat, string.Empty);
         }
 
     }

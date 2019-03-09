@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace InfoGenerator.Properties
+namespace GeneratorUI.Properties
 {
 
 
