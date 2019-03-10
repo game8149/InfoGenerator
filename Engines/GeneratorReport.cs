@@ -4,12 +4,15 @@ using Spire.Xls.Converter;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 
 namespace Engines
 {
     public class GeneratorReport
     {
+        Font font = new Font("Trade Gothic LT Std", 1);
+        Font fontBold = new Font("Trade Gothic LT Std Bold", 1);
         public enum MethodReport
         {
             Random = 0,
@@ -52,7 +55,6 @@ namespace Engines
             SpreadsheetGear.IRange range = null;
             SpreadsheetGear.IWorksheet wsSource = null;
             SpreadsheetGear.IWorksheet wsTarget = null;
-            Debug.WriteLine(System.AppDomain.CurrentDomain.BaseDirectory);
 
             //Retrieving Template and Source
             SpreadsheetGear.IWorkbook wbSource = SpreadsheetGear.Factory.GetWorkbook($@"{FileSource}");
@@ -77,10 +79,10 @@ namespace Engines
 
 
             this.TotalWork = codesSelected.Count;
-            this.ProgressFinished = counterWorked; 
+            this.ProgressFinished = counterWorked;
 
             foreach (string code in codesSelected)
-            { 
+            {
                 SpreadsheetGear.IWorkbook wbTarget = SpreadsheetGear.Factory.GetWorkbook($@"{System.AppDomain.CurrentDomain.BaseDirectory}\Resources\{FileTemplate}");
                 wbSource.WorkbookSet.Calculation = SpreadsheetGear.Calculation.Manual;
                 wsSource = wbSource.Worksheets[0];
@@ -113,8 +115,8 @@ namespace Engines
                         currentYear -= 1;
                         beforeMonth = 12;
                     }
-                    range = wsSource.Cells[12, i]; // Row 12
-                    range.Value = $"{beforeMonth}/{currentYear}"; 
+                    range = wsSource.Cells[11, i]; // Row 11
+                    range.Value = $"{beforeMonth}/{currentYear}";
                 }
 
                 #region Setting Info
@@ -123,12 +125,16 @@ namespace Engines
 
                 wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Font.Color = basicColor;
                 wsTarget.Shapes["NAME_STORE"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Font.Name = "Trade Gothic LT Std";
+                
                 wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Font.Color = basicColor;
                 wsTarget.Shapes["ADDRESS_STORE"].TextFrame.AutoSize = false;
+                wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Font.Name = "Trade Gothic LT Std";
+
                 wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Font.Color = basicColor;
                 wsTarget.Shapes["CODE_STORE"].TextFrame.AutoSize = false;
-
-
+                wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Font.Name = "Trade Gothic LT Std";
+                 
                 wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Text = wsSource.Cells["D3"].Value.ToString();
                 wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Text = wsSource.Cells["E3"].Value.ToString() + ", " + wsSource.Cells["F3"].Value.ToString();
                 wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Text = $"Comercio: {code}";
@@ -161,7 +167,7 @@ namespace Engines
                     txtFrameMN = wsTarget.Shapes[$"MN_{index}"].TextFrame;
                     txtFrameNP = wsTarget.Shapes[$"NP_{index}"].TextFrame;
 
-                    if (index == 2 || index == 4 || index == 6)
+                    if (index == 2 || index == 4)
                     {
                         valueDecimal = 0;
                         Decimal.TryParse(wsSource.Cells[5, i].Value.ToString(), out valueDecimal);
@@ -172,12 +178,12 @@ namespace Engines
                     }
                     else
                     {
-                        valueInt = 0;
-                        int.TryParse(wsSource.Cells[5, i].Value.ToString(), out valueInt);
-                        txtFrameMN.Characters.Text = (valueInt).ToString();
+                        valueDecimal = 0;
+                        Decimal.TryParse(wsSource.Cells[5, i].Value.ToString(), out valueDecimal);
+                        txtFrameMN.Characters.Text = ((int)valueDecimal).ToString();
 
-                        int.TryParse(wsSource.Cells[8, i].Value.ToString(), out valueInt);
-                        txtFrameNP.Characters.Text = (valueInt).ToString();
+                        Decimal.TryParse(wsSource.Cells[8, i].Value.ToString(), out valueDecimal);
+                        txtFrameNP.Characters.Text = ((int)valueDecimal).ToString();
                     }
 
                     txtFrameMN.Characters.Font.Color = basicColor;
@@ -207,10 +213,10 @@ namespace Engines
                 decimal sum3PreviousMonths = 0;
                 for (var i = 2; i < 15; i++)
                 {
-                    wsTarget.Cells[4, i].Value = wsSource.Cells[12, i].Value; // headerDates
+                    wsTarget.Cells[4, i].Value = wsSource.Cells[11, i].Value; // headerDates
 
                     valueDecimal = 0;
-                    range = wsSource.Cells[13, i];
+                    range = wsSource.Cells[12, i];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
 
                     wsTarget.Cells[5, i].Value = valueDecimal;
@@ -222,7 +228,7 @@ namespace Engines
                         sum3PreviousMonths += valueDecimal; // sum of 3 previous months 
 
                     valueDecimal = 0;
-                    range = wsSource.Cells[14, i];
+                    range = wsSource.Cells[13, i];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
                     wsTarget.Cells[6, i].Value = valueDecimal;
                 }
@@ -254,10 +260,10 @@ namespace Engines
                 sum3PreviousMonths = 0;
                 for (var i = 2; i < 15; i++)
                 {
-                    wsTarget.Cells[9, i].Value = wsSource.Cells[12, i].Value; // headerDates
+                    wsTarget.Cells[9, i].Value = wsSource.Cells[11, i].Value; // headerDates
 
                     valueDecimal = 0;
-                    range = wsSource.Cells[15, i];
+                    range = wsSource.Cells[14, i];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
 
                     wsTarget.Cells[10, i].Value = valueDecimal;
@@ -269,7 +275,7 @@ namespace Engines
                         sum3PreviousMonths += valueDecimal; // sum of 3 previous months 
 
                     valueDecimal = 0;
-                    range = wsSource.Cells[16, i];
+                    range = wsSource.Cells[15, i];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
                     wsTarget.Cells[11, i].Value = valueDecimal;
                 }
@@ -288,7 +294,7 @@ namespace Engines
                 wsTarget.Shapes["G4_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
 
                 index = 1;
-                for (var i = 20; i < 25; i++, index++)
+                for (var i = 19; i < 24; i++, index++)
                 {
                     range = wsSource.Cells[i, 2];
                     int.TryParse(range.Value.ToString(), out valueInt);
@@ -318,15 +324,16 @@ namespace Engines
                 wsTarget.Shapes["G5_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
 
                 wsTarget = wbTarget.Worksheets[2];
+                wbSource.WorkbookSet.Calculate();
 
                 List<(int, int)> mayor_days = new List<(int, int)>();
-                index = 1;
+                index = 7; // Begins on Sunday
                 int lessValueIndex = 0;
-                for (var i = 2; i < 9; i++, index++)
+                for (var i = 2; i < 9; i++, index--)
                 {
                     lessValueIndex = -1;
                     valueInt = 0;
-                    int.TryParse(wsSource.Cells[15, i].Value.ToString(), out valueInt);
+                    int.TryParse(wsSource.Cells[33, i].Value.ToString(), out valueInt);
                     wsTarget.Cells[15, i].Value = valueInt;
 
                     if (valueInt > 0)
@@ -358,17 +365,28 @@ namespace Engines
 
                 #endregion
 
-                string nameTarget = $"{name}_{ruc}.xlsx";
-                wbTarget.SaveAs($@"{FolderPath}\{nameTarget}", SpreadsheetGear.FileFormat.OpenXMLWorkbook);
-
+                string nameTarget = $"{name}_{ruc}.xlsx"; 
+                MemoryStream file = new MemoryStream();
+                wbTarget.SaveToStream(file, SpreadsheetGear.FileFormat.OpenXMLWorkbook);
+                GeneratePDF(file, $@"{FolderPath}\{nameTarget}", ruc.Trim()); 
                 counterWorked++;
                 this.ProgressFinished = counterWorked;
             }
+
+            this.WorkFinished = true;
         }
 
-        private void GeneratePDF(string rutaExcel)
+        private void GeneratePDF(MemoryStream file, string ruta, string password)
         {
-            string rutapdf = Path.ChangeExtension(rutaExcel, ".pdf");
+            string rutapdf = Path.ChangeExtension(ruta, ".pdf");
+            Workbook workbook = new Workbook();
+            workbook.LoadFromStream(file, ExcelVersion.Version2016); 
+            workbook.OpenPassword = password;
+            MemoryStream stream = new MemoryStream(); 
+            workbook.SaveToStream(stream, Spire.Xls.FileFormat.PDF); 
+            PdfDocument pdf = new PdfDocument(stream); 
+            pdf.Security.Encrypt(password);
+            pdf.SaveToFile(rutapdf);
         }
 
         private (string, string) EvalueAdviceG2(string currentTitleMonth, decimal sum3PreviousMonths, decimal currentMonth, decimal lastYearMonth, string baseFormat)
@@ -499,9 +517,9 @@ namespace Engines
                 case 5:
                     return "viernes";
                 case 6:
-                    return "sábado";
+                    return "sábados";
                 case 7:
-                    return "domingo";
+                    return "domingos";
             }
             return string.Empty;
 
