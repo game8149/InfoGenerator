@@ -104,6 +104,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Resources\2.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Resources\Source.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
