@@ -3,7 +3,6 @@ using Spire.Xls;
 using Spire.Xls.Converter;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 
@@ -123,38 +122,10 @@ namespace Engines
                 var txtFrame = wsTarget.Shapes["INF_MONTH"].TextFrame;
                 txtFrame.Characters.Text = FormatMonthYear(Month, Year);
 
-                wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["NAME_STORE"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Font.Name = "Trade Gothic LT Std";
-                
-                wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["ADDRESS_STORE"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Font.Name = "Trade Gothic LT Std";
+                wsTarget.Cells["J9"].Value = wsSource.Cells["D3"].Value.ToString();
+                wsTarget.Cells["J10"].Value = wsSource.Cells["E3"].Value.ToString() + ", " + wsSource.Cells["F3"].Value.ToString();
+                wsTarget.Cells["J11"].Value = $"Comercio: {code}";
 
-                wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["CODE_STORE"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Font.Name = "Trade Gothic LT Std";
-                 
-                wsTarget.Shapes["NAME_STORE"].TextFrame.Characters.Text = wsSource.Cells["D3"].Value.ToString();
-                wsTarget.Shapes["ADDRESS_STORE"].TextFrame.Characters.Text = wsSource.Cells["E3"].Value.ToString() + ", " + wsSource.Cells["F3"].Value.ToString();
-                wsTarget.Shapes["CODE_STORE"].TextFrame.Characters.Text = $"Comercio: {code}";
-
-                wsTarget.Shapes["VEN_TITLE"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["NVENT_TITLE"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["CCOM_TITLE"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["CVISIT_TITLE"].TextFrame.Characters.Font.Color = basicColor;
-
-                wsTarget.Shapes["MN_MAIN"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["NP_MAIN"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["MAIN_WARNING1"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["MAIN_WARNING2"].TextFrame.Characters.Font.Color = basicColor;
-
-                wsTarget.Shapes["MN_MAIN"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["MN_MAIN"].TextFrame.HorizontalAlignment = SpreadsheetGear.HAlign.Left;
-                wsTarget.Shapes["MN_MAIN"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["NP_MAIN"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["NP_MAIN"].TextFrame.HorizontalAlignment = SpreadsheetGear.HAlign.Left;
-                wsTarget.Shapes["MN_MAIN"].TextFrame.Characters.Font.Color = basicColor;
                 #endregion
 
                 #region MainData
@@ -365,13 +336,16 @@ namespace Engines
 
                 #endregion
 
-                string nameTarget = $"{name}_{ruc}.xlsx"; 
+                string nameTarget = $"{name}_{ruc}.xlsx";
                 MemoryStream file = new MemoryStream();
                 wbTarget.SaveToStream(file, SpreadsheetGear.FileFormat.OpenXMLWorkbook);
-                GeneratePDF(file, $@"{FolderPath}\{nameTarget}", ruc.Trim()); 
+                wbTarget.SaveAs($@"{FolderPath}\{nameTarget}", SpreadsheetGear.FileFormat.OpenXMLWorkbook);
+                GeneratePDF(file, $@"{FolderPath}\{nameTarget}", ruc.Trim());
                 counterWorked++;
                 this.ProgressFinished = counterWorked;
             }
+
+            this.ProgressFinished = counterWorked;
 
             this.WorkFinished = true;
         }
@@ -380,13 +354,40 @@ namespace Engines
         {
             string rutapdf = Path.ChangeExtension(ruta, ".pdf");
             Workbook workbook = new Workbook();
-            workbook.LoadFromStream(file, ExcelVersion.Version2016); 
-            workbook.OpenPassword = password;
-            MemoryStream stream = new MemoryStream(); 
-            workbook.SaveToStream(stream, Spire.Xls.FileFormat.PDF); 
-            PdfDocument pdf = new PdfDocument(stream); 
-            pdf.Security.Encrypt(password);
+
+            workbook.LoadFromStream(file, ExcelVersion.Version2016);
+            PdfSharp.Pdf.PdfDocument tes = new PdfSharp.Pdf.PdfDocument();
+
+            //for (var id = 0; id < workbook.ActiveSheet.TextBoxes.Count; id++)
+            //{
+            //    var txtb = workbook.ActiveSheet.TextBoxes[id];
+            //    for (var j = 0; j < txtb.RichText.Text.Length; j++)
+            //    {
+            //        txtb.RichText.GetFont(j).FontName = "Trade Gothic LT Std";
+            //    }
+            //}
+
+            //workbook.OpenPassword = password; 
+
+            MemoryStream stream = new MemoryStream();
+
+            //workbook.SaveToFile("tests", Spire.Xls.FileFormat.PostScript);
+            PdfConverter conver = new PdfConverter(workbook);
+
+            PdfConverterSettings converterSettings = new PdfConverterSettings();
+            converterSettings.EmbedFonts = true;
+            converterSettings.TemplateDocument = new PdfDocument();
+            PdfDocument pdf = PdfConvertionHelper.SaveToPdf(workbook, converterSettings);
+
             pdf.SaveToFile(rutapdf);
+
+            //PdfReader reader = new PdfReader(stream);
+            //WriterProperties props = new WriterProperties().SetStandardEncryption(Encoding.UTF8.GetBytes(password), Encoding.UTF8.GetBytes(password), EncryptionConstants.ALLOW_PRINTING,
+            //                EncryptionConstants.ENCRYPTION_AES_128 | EncryptionConstants.DO_NOT_ENCRYPT_METADATA);
+            //PdfWriter writer = new PdfWriter(rutapdf, props);
+            //PdfDocument pdfDoc = new PdfDocument(reader, writer);
+            //pdfDoc.Close();
+
         }
 
         private (string, string) EvalueAdviceG2(string currentTitleMonth, decimal sum3PreviousMonths, decimal currentMonth, decimal lastYearMonth, string baseFormat)
