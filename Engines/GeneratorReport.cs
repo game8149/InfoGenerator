@@ -37,7 +37,7 @@ namespace Engines
         {
             FolderPath = "";
             FileSource = "Source.xlsx";
-            FileTemplate = "Template.xlsx";
+            FileTemplate = "2.xlsx";
         }
 
         public void Generate()
@@ -118,9 +118,8 @@ namespace Engines
                     range.Value = $"{beforeMonth}/{currentYear}";
                 }
 
-                #region Setting Info
-                var txtFrame = wsTarget.Shapes["INF_MONTH"].TextFrame;
-                txtFrame.Characters.Text = FormatMonthYear(Month, Year);
+                #region Setting Info 
+                wsTarget.Cells["AR7"].Value = FormatMonthYear(Month, Year);
 
                 wsTarget.Cells["J9"].Value = wsSource.Cells["D3"].Value.ToString();
                 wsTarget.Cells["J10"].Value = wsSource.Cells["E3"].Value.ToString() + ", " + wsSource.Cells["F3"].Value.ToString();
@@ -131,35 +130,34 @@ namespace Engines
                 #region MainData
                 // Main
                 int index = 2;
-                SpreadsheetGear.Shapes.ITextFrame txtFrameMN = null;
-                SpreadsheetGear.Shapes.ITextFrame txtFrameNP = null;
-                for (var i = 3; i < 7; i++, index++)
-                {
-                    txtFrameMN = wsTarget.Shapes[$"MN_{index}"].TextFrame;
-                    txtFrameNP = wsTarget.Shapes[$"NP_{index}"].TextFrame;
 
-                    if (index == 2 || index == 4)
-                    {
-                        valueDecimal = 0;
-                        Decimal.TryParse(wsSource.Cells[5, i].Value.ToString(), out valueDecimal);
-                        txtFrameMN.Characters.Text = "S/ " + (valueDecimal).ToString("F");
+                valueDecimal = 0;
+                Decimal.TryParse(wsSource.Cells[5, 3].Value.ToString(), out valueDecimal);
+                wsTarget.Cells["R24"].Value = (valueDecimal).ToString("F");
 
-                        Decimal.TryParse(wsSource.Cells[8, i].Value.ToString(), out valueDecimal);
-                        txtFrameNP.Characters.Text = "S/ " + (valueDecimal).ToString("F");
-                    }
-                    else
-                    {
-                        valueDecimal = 0;
-                        Decimal.TryParse(wsSource.Cells[5, i].Value.ToString(), out valueDecimal);
-                        txtFrameMN.Characters.Text = ((int)valueDecimal).ToString();
+                Decimal.TryParse(wsSource.Cells[8, 3].Value.ToString(), out valueDecimal);
+                wsTarget.Cells["R28"].Value = (valueDecimal).ToString("F");
 
-                        Decimal.TryParse(wsSource.Cells[8, i].Value.ToString(), out valueDecimal);
-                        txtFrameNP.Characters.Text = ((int)valueDecimal).ToString();
-                    }
+                valueDecimal = 0;
+                Decimal.TryParse(wsSource.Cells[5, 4].Value.ToString(), out valueDecimal);
+                wsTarget.Cells["Z24"].Value = ((int)valueDecimal).ToString();
 
-                    txtFrameMN.Characters.Font.Color = basicColor;
-                    txtFrameNP.Characters.Font.Color = basicColor;
-                }
+                Decimal.TryParse(wsSource.Cells[8, 4].Value.ToString(), out valueDecimal);
+                wsTarget.Cells["Z28"].Value = ((int)valueDecimal).ToString();
+
+                valueDecimal = 0;
+                Decimal.TryParse(wsSource.Cells[5, 5].Value.ToString(), out valueDecimal);
+                wsTarget.Cells["AH24"].Value = "S/ " + (valueDecimal).ToString("F");
+
+                Decimal.TryParse(wsSource.Cells[8, 5].Value.ToString(), out valueDecimal);
+                wsTarget.Cells["AH28"].Value = "S/ " + (valueDecimal).ToString("F");
+
+                valueDecimal = 0;
+                Decimal.TryParse(wsSource.Cells[5, 6].Value.ToString(), out valueDecimal);
+                wsTarget.Cells["AO24"].Value = ((int)valueDecimal).ToString();
+
+                Decimal.TryParse(wsSource.Cells[8, 6].Value.ToString(), out valueDecimal);
+                wsTarget.Cells["AO28"].Value = ((int)valueDecimal).ToString();
 
                 wsTarget = wbTarget.Worksheets[2];
                 wbSource.WorkbookSet.Calculate();
@@ -169,14 +167,6 @@ namespace Engines
 
                 #region Graphic 2  
                 wsTarget = wbTarget.Worksheets[0];
-                wsTarget.Shapes["G2_FINAL"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["G2_FINAL"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["G2_ADVICE"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["GRAPHIC1_LBL1"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["GRAPHIC1_LBL1"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["GRAPHIC1_LBL2"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["GRAPHIC1_LBL2"].TextFrame.Characters.Font.Color = basicColor;
 
                 wsTarget = wbTarget.Worksheets[2];
                 decimal lastYearmonth = 0;
@@ -206,23 +196,14 @@ namespace Engines
 
                 wsTarget = wbTarget.Worksheets[0];
 
-                var advices2 = EvalueAdviceG2(wsTarget.Shapes["INF_MONTH"].TextFrame.Characters.Text
-                    , sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Text);
-                wsTarget.Shapes["G2_ADVICE"].TextFrame.Characters.Text = advices2.Item1;
-                wsTarget.Shapes["G2_FINAL"].TextFrame.Characters.Text = advices2.Item2;
+                var advices2 = EvalueAdviceG2(wsTarget.Cells["AR7"].Value.ToString()
+                    , sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Cells["E48"].Value.ToString());
+                wsTarget.Cells["E48"].Value = advices2.Item1;
+                wsTarget.Cells["E51"].Value = advices2.Item2;
 
                 #endregion
 
                 #region Graphic 3
-
-                wsTarget.Shapes["G3_FINAL"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["G3_FINAL"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["G3_ADVICE"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["G3_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["GRAPHIC2_LBL1"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["GRAPHIC2_LBL1"].TextFrame.Characters.Font.Color = basicColor;
-                wsTarget.Shapes["GRAPHIC2_LBL2"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["GRAPHIC2_LBL2"].TextFrame.Characters.Font.Color = basicColor;
 
                 wsTarget = wbTarget.Worksheets[2];
 
@@ -253,46 +234,64 @@ namespace Engines
 
                 wsTarget = wbTarget.Worksheets[0];
 
-                var advices3 = EvalueAdviceG3(wsTarget.Shapes["INF_MONTH"].TextFrame.Characters.Text
-                    , sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Shapes["G3_ADVICE"].TextFrame.Characters.Text);
-                wsTarget.Shapes["G3_ADVICE"].TextFrame.Characters.Text = advices3.Item1;
-                wsTarget.Shapes["G3_FINAL"].TextFrame.Characters.Text = advices3.Item2;
+                var advices3 = EvalueAdviceG3(wsTarget.Cells["AR7"].Value.ToString()
+                    , sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Cells["AD48"].Value.ToString());
+                wsTarget.Cells["AD48"].Value = advices3.Item1;
+                wsTarget.Cells["AD51"].Value = advices3.Item2;
                 #endregion
 
                 #region Graphic 4
 
-                wsTarget.Shapes["G4_ADVICE"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["G4_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
-
                 index = 1;
                 for (var i = 19; i < 24; i++, index++)
                 {
-                    range = wsSource.Cells[i, 2];
+                    range = wsSource.Cells[19, 2];
                     int.TryParse(range.Value.ToString(), out valueInt);
-                    wsTarget.Shapes[$"G4_{index}_COUNT"].TextFrame.AutoSize = false;
-                    wsTarget.Shapes[$"G4_{index}_COUNT"].TextFrame.Characters.Font.Color = basicColor;
-                    wsTarget.Shapes[$"G4_{index}_COUNT"].TextFrame.Characters.Text = valueInt.ToString();
+                    wsTarget.Cells["F59"].Value = valueInt.ToString();
 
-                    range = wsSource.Cells[i, 3];
+                    range = wsSource.Cells[19, 3];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
-                    wsTarget.Shapes[$"G4_{index}_PERC"].TextFrame.AutoSize = false;
-                    wsTarget.Shapes[$"G4_{index}_PERC"].TextFrame.Characters.Font.Color = blueColor;
-                    wsTarget.Shapes[$"G4_{index}_PERC"].TextFrame.Characters.Text = $"({(int)(valueDecimal * 100)}%)";
+                    wsTarget.Cells["J59"].Value = $"({(int)(valueDecimal * 100)}%)";
 
-                    wsTarget.Shapes[$"G4_CVISIT_{index}"].TextFrame.AutoSize = false;
-                    wsTarget.Shapes[$"G4_CVISIT_{index}"].TextFrame.Characters.Font.Color = blueColor;
+                    range = wsSource.Cells[20, 2];
+                    int.TryParse(range.Value.ToString(), out valueInt);
+                    wsTarget.Cells["F61"].Value = valueInt.ToString();
 
-                    wsTarget.Shapes[$"G4_TIME_{index}"].TextFrame.AutoSize = false;
-                    wsTarget.Shapes[$"G4_TIME_{index}"].TextFrame.Characters.Font.Color = orangeColor;
+                    range = wsSource.Cells[20, 3];
+                    decimal.TryParse(range.Value.ToString(), out valueDecimal);
+                    wsTarget.Cells["J61"].Value = $"({(int)(valueDecimal * 100)}%)";
+
+                    range = wsSource.Cells[21, 2];
+                    int.TryParse(range.Value.ToString(), out valueInt);
+                    wsTarget.Cells["F63"].Value = valueInt.ToString();
+
+                    range = wsSource.Cells[21, 3];
+                    decimal.TryParse(range.Value.ToString(), out valueDecimal);
+                    wsTarget.Cells["J63"].Value = $"({(int)(valueDecimal * 100)}%)";
+
+                    range = wsSource.Cells[22, 2];
+                    int.TryParse(range.Value.ToString(), out valueInt);
+                    wsTarget.Cells["J65"].Value = valueInt.ToString();
+
+                    range = wsSource.Cells[22, 3];
+                    decimal.TryParse(range.Value.ToString(), out valueDecimal);
+                    wsTarget.Cells["J65"].Value = $"({(int)(valueDecimal * 100)}%)";
+
+                    range = wsSource.Cells[23, 2];
+                    int.TryParse(range.Value.ToString(), out valueInt);
+                    wsTarget.Cells["F67"].Value = valueInt.ToString();
+
+                    range = wsSource.Cells[23, 3];
+                    decimal.TryParse(range.Value.ToString(), out valueDecimal);
+                    wsTarget.Cells["J67"].Value = $"({(int)(valueDecimal * 100)}%)";
+                     
                 }
 
                 wsTarget = wbTarget.Worksheets[0];
 
                 #endregion
 
-                #region Graphic 5 
-                wsTarget.Shapes["G5_ADVICE"].TextFrame.AutoSize = false;
-                wsTarget.Shapes["G5_ADVICE"].TextFrame.Characters.Font.Color = basicColor;
+                #region Graphic 5  
 
                 wsTarget = wbTarget.Worksheets[2];
                 wbSource.WorkbookSet.Calculate();
@@ -331,8 +330,8 @@ namespace Engines
 
                 wsTarget = wbTarget.Worksheets[0];
 
-                var advices5 = EvalueAdviceG5(mayor_days, wsTarget.Shapes["G5_ADVICE"].TextFrame.Characters.Text);
-                wsTarget.Shapes["G5_ADVICE"].TextFrame.Characters.Text = advices5.Item1;
+                var advices5 = EvalueAdviceG5(mayor_days, wsTarget.Cells["AD70"].Value.ToString());
+                wsTarget.Cells["AD70"].Value = advices5.Item1;
 
                 #endregion
 
