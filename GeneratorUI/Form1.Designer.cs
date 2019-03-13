@@ -67,21 +67,23 @@
             // 
             // txtPathSource
             // 
-            this.txtPathSource.Location = new System.Drawing.Point(110, 44);
+            this.txtPathSource.Location = new System.Drawing.Point(124, 44);
             this.txtPathSource.Name = "txtPathSource";
-            this.txtPathSource.Size = new System.Drawing.Size(184, 21);
+            this.txtPathSource.Size = new System.Drawing.Size(184, 24);
             this.txtPathSource.TabIndex = 15;
+            this.txtPathSource.Text = "D:\\VisaNet\\Generacion PDF\\InfoGenerator\\Engines\\Resources\\Source.xlsx";
             // 
             // txtPathTarget
             // 
-            this.txtPathTarget.Location = new System.Drawing.Point(110, 81);
+            this.txtPathTarget.Location = new System.Drawing.Point(124, 81);
             this.txtPathTarget.Name = "txtPathTarget";
-            this.txtPathTarget.Size = new System.Drawing.Size(184, 21);
+            this.txtPathTarget.Size = new System.Drawing.Size(184, 24);
             this.txtPathTarget.TabIndex = 16;
+            this.txtPathTarget.Text = "D:\\Publicaciones\\PDF";
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(300, 79);
+            this.button2.Location = new System.Drawing.Point(314, 79);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(25, 23);
             this.button2.TabIndex = 17;
@@ -91,7 +93,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(300, 42);
+            this.button3.Location = new System.Drawing.Point(314, 42);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(25, 23);
             this.button3.TabIndex = 18;
@@ -104,7 +106,7 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(27, 48);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(76, 13);
+            this.label5.Size = new System.Drawing.Size(94, 17);
             this.label5.TabIndex = 19;
             this.label5.Text = "Orig. de Datos";
             // 
@@ -113,7 +115,7 @@
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(27, 85);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(44, 13);
+            this.label6.Size = new System.Drawing.Size(54, 17);
             this.label6.TabIndex = 20;
             this.label6.Text = "Destino";
             // 
@@ -123,7 +125,7 @@
             this.label7.Font = new System.Drawing.Font("Trade Gothic LT Std", 9.749999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label7.Location = new System.Drawing.Point(25, 19);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(139, 15);
+            this.label7.Size = new System.Drawing.Size(180, 20);
             this.label7.TabIndex = 21;
             this.label7.Text = "Configuracion Archivos";
             // 
@@ -132,16 +134,16 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(31, 187);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(66, 13);
+            this.label4.Size = new System.Drawing.Size(83, 17);
             this.label4.TabIndex = 30;
             this.label4.Text = "Tipo Report.";
             // 
             // rdCode
             // 
             this.rdCode.AutoSize = true;
-            this.rdCode.Location = new System.Drawing.Point(203, 186);
+            this.rdCode.Location = new System.Drawing.Point(217, 186);
             this.rdCode.Name = "rdCode";
-            this.rdCode.Size = new System.Drawing.Size(59, 17);
+            this.rdCode.Size = new System.Drawing.Size(71, 21);
             this.rdCode.TabIndex = 29;
             this.rdCode.TabStop = true;
             this.rdCode.Text = "Codigo";
@@ -151,9 +153,9 @@
             // rdRandon
             // 
             this.rdRandon.AutoSize = true;
-            this.rdRandon.Location = new System.Drawing.Point(110, 186);
+            this.rdRandon.Location = new System.Drawing.Point(124, 186);
             this.rdRandon.Name = "rdRandon";
-            this.rdRandon.Size = new System.Drawing.Size(70, 17);
+            this.rdRandon.Size = new System.Drawing.Size(84, 21);
             this.rdRandon.TabIndex = 28;
             this.rdRandon.TabStop = true;
             this.rdRandon.Text = "Aleatorio";
@@ -162,18 +164,18 @@
             // 
             // txtYear
             // 
-            this.txtYear.Location = new System.Drawing.Point(110, 150);
+            this.txtYear.Location = new System.Drawing.Point(124, 150);
             this.txtYear.Name = "txtYear";
-            this.txtYear.Size = new System.Drawing.Size(71, 21);
+            this.txtYear.Size = new System.Drawing.Size(71, 24);
             this.txtYear.TabIndex = 27;
-            this.txtYear.Text = "2018";
+            this.txtYear.Text = "2019";
             this.txtYear.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // txtOption
             // 
-            this.txtOption.Location = new System.Drawing.Point(110, 221);
+            this.txtOption.Location = new System.Drawing.Point(124, 221);
             this.txtOption.Name = "txtOption";
-            this.txtOption.Size = new System.Drawing.Size(100, 21);
+            this.txtOption.Size = new System.Drawing.Size(100, 24);
             this.txtOption.TabIndex = 25;
             // 
             // label3
@@ -181,7 +183,7 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(31, 153);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(26, 13);
+            this.label3.Size = new System.Drawing.Size(32, 17);
             this.label3.TabIndex = 24;
             this.label3.Text = "Año";
             // 
@@ -190,16 +192,16 @@
             this.lblOption.AutoSize = true;
             this.lblOption.Location = new System.Drawing.Point(31, 223);
             this.lblOption.Name = "lblOption";
-            this.lblOption.Size = new System.Drawing.Size(41, 13);
+            this.lblOption.Size = new System.Drawing.Size(50, 17);
             this.lblOption.TabIndex = 23;
             this.lblOption.Text = "Codigo";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(200, 154);
+            this.label1.Location = new System.Drawing.Point(214, 154);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(27, 13);
+            this.label1.Size = new System.Drawing.Size(33, 17);
             this.label1.TabIndex = 22;
             this.label1.Text = "Mes";
             // 
@@ -209,7 +211,7 @@
             this.label8.Font = new System.Drawing.Font("Trade Gothic LT Std", 9.749999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label8.Location = new System.Drawing.Point(22, 124);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(72, 15);
+            this.label8.Size = new System.Drawing.Size(95, 20);
             this.label8.TabIndex = 31;
             this.label8.Text = "Parametros";
             // 
@@ -229,9 +231,9 @@
             "Oct",
             "Nov",
             "Dic"});
-            this.cboMonth.Location = new System.Drawing.Point(245, 150);
+            this.cboMonth.Location = new System.Drawing.Point(259, 150);
             this.cboMonth.Name = "cboMonth";
-            this.cboMonth.Size = new System.Drawing.Size(80, 21);
+            this.cboMonth.Size = new System.Drawing.Size(80, 25);
             this.cboMonth.TabIndex = 32;
             // 
             // openFileDialog1
@@ -250,7 +252,7 @@
             this.lblNameActual.AutoSize = true;
             this.lblNameActual.Location = new System.Drawing.Point(12, 8);
             this.lblNameActual.Name = "lblNameActual";
-            this.lblNameActual.Size = new System.Drawing.Size(15, 13);
+            this.lblNameActual.Size = new System.Drawing.Size(18, 17);
             this.lblNameActual.TabIndex = 34;
             this.lblNameActual.Text = "{}";
             // 
@@ -259,7 +261,7 @@
             this.lblProgress.AutoSize = true;
             this.lblProgress.Location = new System.Drawing.Point(164, 9);
             this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(24, 13);
+            this.lblProgress.Size = new System.Drawing.Size(30, 17);
             this.lblProgress.TabIndex = 35;
             this.lblProgress.Text = "0/0";
             // 
@@ -275,7 +277,7 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(357, 329);
             this.Controls.Add(this.panel1);

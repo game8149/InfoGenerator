@@ -99,8 +99,8 @@ namespace GeneratorUI
         {
             try
             {
-                run.FileSource = fileSourcePath;
-                run.FolderPath = targetPath;
+                run.FileSource = txtPathSource.Text.Trim();
+                run.FolderPath = txtPathTarget.Text.Trim();
                 run.Month = cboMonth.SelectedIndex + 1;
                 run.Year = int.Parse(txtYear.Text);
                 if (rdCode.Checked)

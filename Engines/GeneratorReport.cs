@@ -1,10 +1,10 @@
-﻿using Spire.Pdf;
+﻿using iText.Kernel.Pdf;
 using Spire.Xls;
-using Spire.Xls.Converter;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Text;
 
 namespace Engines
 {
@@ -37,13 +37,14 @@ namespace Engines
         {
             FolderPath = "";
             FileSource = "Source.xlsx";
-            FileTemplate = "2.xlsx";
+            FileTemplate = "TemplateNew.xlsx";
         }
 
         public void Generate()
         {
             string ruc = string.Empty;
             string name = string.Empty;
+            string email = string.Empty;
             int beforeMonth = Month;
             int currentYear = Year;
             int valueInt = 0;
@@ -63,19 +64,25 @@ namespace Engines
 
             if (Method == MethodReport.Random)
             {
-                while (codesSelected.Count < RandomNumber)
-                {
-                    int randonRowIndex = new Random().Next(1, 1000);
+                for (int i= 1;i<= RandomNumber;i++)
+                    codesSelected.Add(wsSource.Cells[i, 0].Value.ToString());
 
-                    if (!codesSelected.Contains(wsSource.Cells[randonRowIndex, 0].Value.ToString()))
-                        codesSelected.Add(wsSource.Cells[randonRowIndex, 0].Value.ToString());
-                }
+                //while (codesSelected.Count < RandomNumber)
+                //{
+                //    int randonRowIndex = new Random().Next(1, 617);
+
+                //    if (!codesSelected.Contains(wsSource.Cells[randonRowIndex, 0].Value.ToString()))
+                //}
             }
             else codesSelected.Add(CodeStore);
 
             wsSource = wbSource.Worksheets[0];
             wsSource.Cells["G3"].Formula = wsSource.Cells["D3"].Formula.Replace("4", "3");
+            wsSource.Cells["H3"].Formula = wsSource.Cells["D3"].Formula.Replace("4", "36");
 
+            SpreadsheetGear.Drawing.Color basicColor = SpreadsheetGear.Drawing.Color.FromArgb(89, 89, 89);
+            SpreadsheetGear.Drawing.Color blueColor = SpreadsheetGear.Drawing.Color.FromArgb(0, 112, 192);
+            SpreadsheetGear.Drawing.Color orangeColor = SpreadsheetGear.Drawing.Color.FromArgb(255, 153, 51);
 
             this.TotalWork = codesSelected.Count;
             this.ProgressFinished = counterWorked;
@@ -85,22 +92,22 @@ namespace Engines
                 SpreadsheetGear.IWorkbook wbTarget = SpreadsheetGear.Factory.GetWorkbook($@"{System.AppDomain.CurrentDomain.BaseDirectory}\Resources\{FileTemplate}");
                 wbSource.WorkbookSet.Calculation = SpreadsheetGear.Calculation.Manual;
                 wsSource = wbSource.Worksheets[0];
-
-                SpreadsheetGear.Drawing.Color basicColor = SpreadsheetGear.Drawing.Color.FromArgb(89, 89, 89);
-                SpreadsheetGear.Drawing.Color blueColor = SpreadsheetGear.Drawing.Color.FromArgb(0, 112, 192);
-                SpreadsheetGear.Drawing.Color orangeColor = SpreadsheetGear.Drawing.Color.FromArgb(255, 153, 51);
-
+                 
                 //Update Data from Excel 
                 range = wsSource.Cells["C3"];
                 range.Value = code;
                 wbSource.WorkbookSet.Calculate();
                 wbSource.Save();
                 ruc = wsSource.Cells["G3"].Value?.ToString();
-                name = wsSource.Cells["D3"].Value?.ToString().Replace(".", string.Empty).Replace(' ', '_');
+                name = wsSource.Cells["D3"].Value?.ToString().Replace(".", string.Empty);
+                email = wsSource.Cells["H3"].Value?.ToString();
                 NameActual = name;
 
                 wsTarget = wbTarget.Worksheets[0];
-
+                   
+                wsTarget.Shapes["MAIN_WARNING1"].TextFrame.Characters.Font.Color = basicColor;
+                wsTarget.Shapes["MAIN_WARNING2"].TextFrame.Characters.Font.Color = basicColor;
+ 
                 // C12, C13, C14
                 beforeMonth = Month;
                 currentYear = Year;
@@ -119,7 +126,7 @@ namespace Engines
                 }
 
                 #region Setting Info 
-                wsTarget.Cells["AR7"].Value = FormatMonthYear(Month, Year);
+                wsTarget.Cells["AT7"].Value = FormatMonthYear(Month, Year);
 
                 wsTarget.Cells["J9"].Value = wsSource.Cells["D3"].Value.ToString();
                 wsTarget.Cells["J10"].Value = wsSource.Cells["E3"].Value.ToString() + ", " + wsSource.Cells["F3"].Value.ToString();
@@ -133,31 +140,31 @@ namespace Engines
 
                 valueDecimal = 0;
                 Decimal.TryParse(wsSource.Cells[5, 3].Value.ToString(), out valueDecimal);
-                wsTarget.Cells["R24"].Value = (valueDecimal).ToString("F");
+                wsTarget.Cells["P24"].Value = (valueDecimal).ToString("N0");
 
                 Decimal.TryParse(wsSource.Cells[8, 3].Value.ToString(), out valueDecimal);
-                wsTarget.Cells["R28"].Value = (valueDecimal).ToString("F");
+                wsTarget.Cells["P28"].Value = (valueDecimal).ToString("N0");
 
                 valueDecimal = 0;
                 Decimal.TryParse(wsSource.Cells[5, 4].Value.ToString(), out valueDecimal);
-                wsTarget.Cells["Z24"].Value = ((int)valueDecimal).ToString();
+                wsTarget.Cells["Y24"].Value = (valueDecimal).ToString("N0");
 
                 Decimal.TryParse(wsSource.Cells[8, 4].Value.ToString(), out valueDecimal);
-                wsTarget.Cells["Z28"].Value = ((int)valueDecimal).ToString();
+                wsTarget.Cells["Y28"].Value = (valueDecimal).ToString("N0");
 
                 valueDecimal = 0;
                 Decimal.TryParse(wsSource.Cells[5, 5].Value.ToString(), out valueDecimal);
-                wsTarget.Cells["AH24"].Value = "S/ " + (valueDecimal).ToString("F");
+                wsTarget.Cells["AH24"].Value = (valueDecimal).ToString("N0");
 
                 Decimal.TryParse(wsSource.Cells[8, 5].Value.ToString(), out valueDecimal);
-                wsTarget.Cells["AH28"].Value = "S/ " + (valueDecimal).ToString("F");
+                wsTarget.Cells["AH28"].Value = (valueDecimal).ToString("N0");
 
                 valueDecimal = 0;
                 Decimal.TryParse(wsSource.Cells[5, 6].Value.ToString(), out valueDecimal);
-                wsTarget.Cells["AO24"].Value = ((int)valueDecimal).ToString();
+                wsTarget.Cells["AQ24"].Value = (valueDecimal).ToString("N0");
 
                 Decimal.TryParse(wsSource.Cells[8, 6].Value.ToString(), out valueDecimal);
-                wsTarget.Cells["AO28"].Value = ((int)valueDecimal).ToString();
+                wsTarget.Cells["AQ28"].Value = (valueDecimal).ToString("N0");
 
                 wsTarget = wbTarget.Worksheets[2];
                 wbSource.WorkbookSet.Calculate();
@@ -172,9 +179,11 @@ namespace Engines
                 decimal lastYearmonth = 0;
                 decimal actualMonth = 0;
                 decimal sum3PreviousMonths = 0;
+                DateTime? dateValue = null;
                 for (var i = 2; i < 15; i++)
                 {
-                    wsTarget.Cells[4, i].Value = wsSource.Cells[11, i].Value; // headerDates
+                    dateValue = ParseDateXlsToDateTime(int.Parse(wsSource.Cells[11, i].Value.ToString()));
+                    wsTarget.Cells[4, i].Value = FormatMonthYear(dateValue.Value.Month, dateValue.Value.Year, true); // headerDates
 
                     valueDecimal = 0;
                     range = wsSource.Cells[12, i];
@@ -196,7 +205,7 @@ namespace Engines
 
                 wsTarget = wbTarget.Worksheets[0];
 
-                var advices2 = EvalueAdviceG2(wsTarget.Cells["AR7"].Value.ToString()
+                var advices2 = EvalueAdviceG2(wsTarget.Cells["AT7"].Value.ToString()
                     , sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Cells["E48"].Value.ToString());
                 wsTarget.Cells["E48"].Value = advices2.Item1;
                 wsTarget.Cells["E51"].Value = advices2.Item2;
@@ -212,7 +221,8 @@ namespace Engines
                 sum3PreviousMonths = 0;
                 for (var i = 2; i < 15; i++)
                 {
-                    wsTarget.Cells[9, i].Value = wsSource.Cells[11, i].Value; // headerDates
+                    dateValue = ParseDateXlsToDateTime(int.Parse(wsSource.Cells[11, i].Value.ToString()));
+                    wsTarget.Cells[9, i].Value = FormatMonthYear(dateValue.Value.Month, dateValue.Value.Year, true); // headerDates
 
                     valueDecimal = 0;
                     range = wsSource.Cells[14, i];
@@ -234,7 +244,7 @@ namespace Engines
 
                 wsTarget = wbTarget.Worksheets[0];
 
-                var advices3 = EvalueAdviceG3(wsTarget.Cells["AR7"].Value.ToString()
+                var advices3 = EvalueAdviceG3(wsTarget.Cells["AT7"].Value.ToString()
                     , sum3PreviousMonths, actualMonth, lastYearmonth, wsTarget.Cells["AD48"].Value.ToString());
                 wsTarget.Cells["AD48"].Value = advices3.Item1;
                 wsTarget.Cells["AD51"].Value = advices3.Item2;
@@ -247,44 +257,44 @@ namespace Engines
                 {
                     range = wsSource.Cells[19, 2];
                     int.TryParse(range.Value.ToString(), out valueInt);
-                    wsTarget.Cells["F59"].Value = valueInt.ToString();
+                    wsTarget.Cells["E59"].Value = valueInt.ToString();
 
                     range = wsSource.Cells[19, 3];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
-                    wsTarget.Cells["J59"].Value = $"({(int)(valueDecimal * 100)}%)";
+                    wsTarget.Cells["H59"].Value = $"({(int)(valueDecimal * 100)}%)";
 
                     range = wsSource.Cells[20, 2];
                     int.TryParse(range.Value.ToString(), out valueInt);
-                    wsTarget.Cells["F61"].Value = valueInt.ToString();
+                    wsTarget.Cells["E61"].Value = valueInt.ToString();
 
                     range = wsSource.Cells[20, 3];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
-                    wsTarget.Cells["J61"].Value = $"({(int)(valueDecimal * 100)}%)";
+                    wsTarget.Cells["H61"].Value = $"({(int)(valueDecimal * 100)}%)";
 
                     range = wsSource.Cells[21, 2];
                     int.TryParse(range.Value.ToString(), out valueInt);
-                    wsTarget.Cells["F63"].Value = valueInt.ToString();
+                    wsTarget.Cells["E63"].Value = valueInt.ToString();
 
                     range = wsSource.Cells[21, 3];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
-                    wsTarget.Cells["J63"].Value = $"({(int)(valueDecimal * 100)}%)";
+                    wsTarget.Cells["H63"].Value = $"({(int)(valueDecimal * 100)}%)";
 
                     range = wsSource.Cells[22, 2];
                     int.TryParse(range.Value.ToString(), out valueInt);
-                    wsTarget.Cells["J65"].Value = valueInt.ToString();
+                    wsTarget.Cells["E65"].Value = valueInt.ToString();
 
                     range = wsSource.Cells[22, 3];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
-                    wsTarget.Cells["J65"].Value = $"({(int)(valueDecimal * 100)}%)";
+                    wsTarget.Cells["H65"].Value = $"({(int)(valueDecimal * 100)}%)";
 
                     range = wsSource.Cells[23, 2];
                     int.TryParse(range.Value.ToString(), out valueInt);
-                    wsTarget.Cells["F67"].Value = valueInt.ToString();
+                    wsTarget.Cells["E67"].Value = valueInt.ToString();
 
                     range = wsSource.Cells[23, 3];
                     decimal.TryParse(range.Value.ToString(), out valueDecimal);
-                    wsTarget.Cells["J67"].Value = $"({(int)(valueDecimal * 100)}%)";
-                     
+                    wsTarget.Cells["H67"].Value = $"({(int)(valueDecimal * 100)}%)";
+
                 }
 
                 wsTarget = wbTarget.Worksheets[0];
@@ -335,11 +345,14 @@ namespace Engines
 
                 #endregion
 
-                string nameTarget = $"{name}_{ruc}.xlsx";
-                MemoryStream file = new MemoryStream();
-                wbTarget.SaveToStream(file, SpreadsheetGear.FileFormat.OpenXMLWorkbook);
-                wbTarget.SaveAs($@"{FolderPath}\{nameTarget}", SpreadsheetGear.FileFormat.OpenXMLWorkbook);
-                GeneratePDF(file, $@"{FolderPath}\{nameTarget}", ruc.Trim());
+                string nameTarget = $"{name}~{ruc}~{email}.xlsx";
+
+                using (MemoryStream file = new MemoryStream())
+                {
+                    wbTarget.SaveToStream(file, SpreadsheetGear.FileFormat.OpenXMLWorkbook);
+                    wbTarget.SaveAs($@"{FolderPath}\{nameTarget}", SpreadsheetGear.FileFormat.OpenXMLWorkbook);
+                    GeneratePDF(file, $@"{FolderPath}\{nameTarget}", ruc.Trim());
+                }
                 counterWorked++;
                 this.ProgressFinished = counterWorked;
             }
@@ -355,38 +368,18 @@ namespace Engines
             Workbook workbook = new Workbook();
 
             workbook.LoadFromStream(file, ExcelVersion.Version2016);
-            PdfSharp.Pdf.PdfDocument tes = new PdfSharp.Pdf.PdfDocument();
 
-            //for (var id = 0; id < workbook.ActiveSheet.TextBoxes.Count; id++)
-            //{
-            //    var txtb = workbook.ActiveSheet.TextBoxes[id];
-            //    for (var j = 0; j < txtb.RichText.Text.Length; j++)
-            //    {
-            //        txtb.RichText.GetFont(j).FontName = "Trade Gothic LT Std";
-            //    }
-            //}
+            using (MemoryStream stream = new MemoryStream())
+            {
+                workbook.SaveToStream(stream, Spire.Xls.FileFormat.PDF);
 
-            //workbook.OpenPassword = password; 
-
-            MemoryStream stream = new MemoryStream();
-
-            //workbook.SaveToFile("tests", Spire.Xls.FileFormat.PostScript);
-            PdfConverter conver = new PdfConverter(workbook);
-
-            PdfConverterSettings converterSettings = new PdfConverterSettings();
-            converterSettings.EmbedFonts = true;
-            converterSettings.TemplateDocument = new PdfDocument();
-            PdfDocument pdf = PdfConvertionHelper.SaveToPdf(workbook, converterSettings);
-
-            pdf.SaveToFile(rutapdf);
-
-            //PdfReader reader = new PdfReader(stream);
-            //WriterProperties props = new WriterProperties().SetStandardEncryption(Encoding.UTF8.GetBytes(password), Encoding.UTF8.GetBytes(password), EncryptionConstants.ALLOW_PRINTING,
-            //                EncryptionConstants.ENCRYPTION_AES_128 | EncryptionConstants.DO_NOT_ENCRYPT_METADATA);
-            //PdfWriter writer = new PdfWriter(rutapdf, props);
-            //PdfDocument pdfDoc = new PdfDocument(reader, writer);
-            //pdfDoc.Close();
-
+                PdfReader reader = new PdfReader(stream);
+                WriterProperties props = new WriterProperties().SetStandardEncryption(Encoding.UTF8.GetBytes(password), Encoding.UTF8.GetBytes(password), EncryptionConstants.ALLOW_PRINTING,
+                                EncryptionConstants.ENCRYPTION_AES_128 | EncryptionConstants.DO_NOT_ENCRYPT_METADATA);
+                PdfWriter writer = new PdfWriter(rutapdf, props);
+                PdfDocument pdfDoc = new PdfDocument(reader, writer);
+                pdfDoc.Close();
+            }
         }
 
         private (string, string) EvalueAdviceG2(string currentTitleMonth, decimal sum3PreviousMonths, decimal currentMonth, decimal lastYearMonth, string baseFormat)
@@ -525,37 +518,44 @@ namespace Engines
 
         }
 
-        private string FormatMonthYear(int month, int year)
+        private string FormatMonthYear(int month, int year, bool includeSimbol = false)
         {
+            string slipper = (includeSimbol ? "-" : " ");
             switch (month)
             {
                 case 1:
-                    return $"Ene {year}";
+                    return $"Ene{slipper}{year}";
                 case 2:
-                    return $"Feb {year}";
+                    return $"Feb{slipper}{year}";
                 case 3:
-                    return $"Mar {year}";
+                    return $"Mar{slipper}{year}";
                 case 4:
-                    return $"Abr {year}";
+                    return $"Abr{slipper}{year}";
                 case 5:
-                    return $"May {year}";
+                    return $"May{slipper}{year}";
                 case 6:
-                    return $"Jun {year}";
+                    return $"Jun{slipper}{year}";
                 case 7:
-                    return $"Jul {year}";
+                    return $"Jul{slipper}{year}";
                 case 8:
-                    return $"Ago {year}";
+                    return $"Ago{slipper}{year}";
                 case 9:
-                    return $"Set {year}";
+                    return $"Set{slipper}{year}";
                 case 10:
-                    return $"Oct {year}";
+                    return $"Oct{slipper}{year}";
                 case 11:
-                    return $"Nov {year}";
+                    return $"Nov{slipper}{year}";
                 case 12:
-                    return $"Dic {year}";
+                    return $"Dic{slipper}{year}";
             }
             return string.Empty;
 
+        }
+
+        private DateTime ParseDateXlsToDateTime(int SerialDate)
+        {
+            if (SerialDate > 59) SerialDate -= 1; //Excel/Lotus 2/29/1900 bug   
+            return new DateTime(1899, 12, 31).AddDays(SerialDate);
         }
 
     }
